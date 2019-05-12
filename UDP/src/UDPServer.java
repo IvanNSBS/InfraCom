@@ -14,22 +14,21 @@ public class UDPServer {
 		else if( msg.contains("Hmm...") )
 			return ("???").getBytes();
 		else if( msg.contains("Ok") )
-			return ("kO").getBytes();
+			return ("kO").getBytes(); 
 		else
 			return ("Nao entendi sua msg").getBytes();
 	}
 	
 	public static void main(String[] args) throws IOException{
 		DatagramSocket serverSocket = new DatagramSocket(5000);
-		
-		byte[] recvData = new byte[1024];
+		 
+		byte[] recvData = new byte[1024]; 
 		byte[] sendData = new byte[1024];
 		
 		InetAddress clientIP;
 		
 		int port = 6000;
 		
-		System.out.println("Iniciando o servidor...");
 		while(true) {
 			recvData = new byte[1024]; // flush byte data
 			DatagramPacket recvPacket = new DatagramPacket(recvData, recvData.length);
