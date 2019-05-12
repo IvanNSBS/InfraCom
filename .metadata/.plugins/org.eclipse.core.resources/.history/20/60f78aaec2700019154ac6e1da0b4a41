@@ -1,0 +1,40 @@
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+
+public class UDPServer {
+	
+	public static bytes[] answerMsg() {
+		
+	}
+	
+	public static void main(String[] args) throws IOException{
+		DatagramSocket serverSocket = new DatagramSocket(5000);
+		
+		byte[] recvData = new byte[1024];
+		byte[] sendData = ("1").getBytes();
+		
+		InetAddress clientIP;
+		
+		int port = 6000;
+		
+		System.out.println("Iniciando o servidor...");
+		while(true) {
+			DatagramPacket recvPacket = new DatagramPacket(recvData, recvData.length);
+			serverSocket.receive(recvPacket);
+			System.out.println("Servidor recebeu um pacote de " + recvPacket.getAddress());
+			String recvMsg = new String(recvPacket.getData());
+			System.out.println("Mensagem recebida pelo servidor: " + recvMsg);
+			
+			clientIP = recvPacket.getAddress();
+			
+			DatagramPacket sendPacket = sendPacket = new DatagramPacket(sendData, sendData.length, clientIP, port);
+			serverSocket.send(sendPacket);
+			
+			System.out.println("Servidor enviou a resposta para: " + recvPacket.getAddress());
+		}
+		
+		
+	}
+}

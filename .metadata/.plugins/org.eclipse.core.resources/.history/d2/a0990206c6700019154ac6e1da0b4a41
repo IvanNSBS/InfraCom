@@ -1,0 +1,56 @@
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+
+public class UDPServer {
+	
+	public static byte[] answerMsg(String msg) {
+		
+		switch(msg) {
+			case msg.contains(("Oie")):
+				return ("Um olá do servidor!").getBytes();
+			case ("Eu sou o cliente"):
+				return ("Eu sei...").getBytes();
+			case ("Hmm..."):
+				return ("???").getBytes();
+			case ("Ok"):
+				return ("kO").getBytes();
+			default:
+				return ("Nao entendi sua msg").getBytes();
+		}
+	}
+	
+	public static void main(String[] args) throws IOException{
+		DatagramSocket serverSocket = new DatagramSocket(5000);
+		
+		byte[] recvData = new byte[1024];
+		byte[] sendData = new byte[1024];
+		
+		InetAddress clientIP;
+		
+		int port = 6000;
+		
+		System.out.println("Iniciando o servidor...");
+		while(true) {
+			recvData = new byte[1024]; // flush byte data
+			DatagramPacket recvPacket = new DatagramPacket(recvData, recvData.length);
+			serverSocket.receive(recvPacket);
+			System.out.println("Servidor recebeu um pacote de " + recvPacket.getAddress());
+			String recvMsg = new String(recvPacket.getData());
+			System.out.println("Mensagem recebida pelo servidor: " + recvMsg);
+			
+			clientIP = recvPacket.getAddress();
+			
+			sendData = answerMsg(recvMsg);
+			
+			DatagramPacket sendPacket  = new DatagramPacket(sendData, sendData.length, clientIP, port);
+			System.out.println("Enviando a resposta: " + sendPacket.getData());
+			serverSocket.send(sendPacket);
+			
+			System.out.println("Servidor enviou a resposta para: " + recvPacket.getAddress());
+		}
+		
+		
+	}
+}
