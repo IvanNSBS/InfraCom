@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.Date;
 
 public class TCPClient {
@@ -44,7 +45,10 @@ public class TCPClient {
 				DataOutputStream msgToSend = new DataOutputStream(socket.getOutputStream());
 				BufferedReader serverAnswer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				
-				msgToSend.writeBytes(selectMsg() + '\n');
+
+				Scanner input = new Scanner(System.in);
+				
+				msgToSend.writeBytes(input.nextLine() + '\n');
 				long startTime = System.nanoTime();
 				Date sendTime = new Date();		
 				
