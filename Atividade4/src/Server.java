@@ -11,6 +11,13 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
 public class Server extends Thread {
 	
 	private static ArrayList<BufferedWriter> clientList;
@@ -71,17 +78,14 @@ public class Server extends Thread {
 	public static void main(String[] args) {
 		try {
 			
-			Scanner input = new Scanner(System.in);
-			System.out.println("Digite a porta do servidor.\nCaso nada seja digitado, a porta padrão é 3000");
-			
-			String line = input.nextLine(); 
-			int port = 3000;
-			if (!line.equals(""))
-				port = Integer.parseInt(input.nextLine());
-			
-			server = new ServerSocket(port);
+		    JLabel lblMessage = new JLabel("Porta do Servidor:");
+		    JTextField txtPorta = new JTextField("12345");
+		    Object[] texts = {lblMessage, txtPorta };  
+		    JOptionPane.showMessageDialog(null, texts);
+		    server = new ServerSocket(Integer.parseInt(txtPorta.getText()));
+		    JOptionPane.showMessageDialog(null,"Servidor ativo na porta: " + txtPorta.getText() + "e ip: " + server.getInetAddress());
+		    
 			clientList = new ArrayList<BufferedWriter>();
-			System.out.println("Servidor iniciado na porta " + port);
 
 			while (true) {
 				System.out.println("Aguardando conexão...");
