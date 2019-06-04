@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -48,6 +49,7 @@ public class ClientExample extends JFrame implements ActionListener, KeyListener
 		Object[] texts = { lblMessage, txtIP, txtPorta, txtNome };
 		JOptionPane.showMessageDialog(null, texts);
 		pnlContent = new JPanel();
+		pnlContent.setPreferredSize(new Dimension(800,600));
 		texto = new JTextArea(10, 20);
 		texto.setEditable(false);
 		texto.setBackground(new Color(240, 240, 240));
@@ -59,6 +61,8 @@ public class ClientExample extends JFrame implements ActionListener, KeyListener
 		btnSair = new JButton("Sair");
 		btnSair.setToolTipText("Sair do Chat");
 		btnSend.addActionListener(this);
+		btnSend.addKeyListener(this);
+		txtMsg.addKeyListener(this);
 		btnSair.addActionListener(this);
 		JScrollPane scroll = new JScrollPane(texto);
 		texto.setLineWrap(true);
@@ -74,8 +78,8 @@ public class ClientExample extends JFrame implements ActionListener, KeyListener
 		setTitle(txtNome.getText());
 		setContentPane(pnlContent);
 		setLocationRelativeTo(null);
-		setResizable(false);
-		setSize(250, 300);
+		setResizable(true);
+		setSize(240, 300);
 		setVisible(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
@@ -85,17 +89,17 @@ public class ClientExample extends JFrame implements ActionListener, KeyListener
 		ou = socket.getOutputStream();
 		ouw = new OutputStreamWriter(ou);
 		bfw = new BufferedWriter(ouw);
-		bfw.write(txtNome.getText() + " diz -> \r\n");
+		bfw.write(txtNome.getText() + " diz -> \n");
 		bfw.flush();
 	}
 
 	public void enviarMensagem(String msg) throws IOException {
 		if (msg.equals("Sair")) {
-			bfw.write("Desconectado \r\n");
-			texto.append("Desconectado \r\n");
+			bfw.write("Desconectado \n");
+			texto.append("Desconectado \n");
 		} else {
-			bfw.write("\n" + msg + "\r\n");
-			texto.append(txtNome.getText() + " diz -> \n" + txtMsg.getText() + "\r\n");
+			bfw.write(msg + "\r\n");
+			texto.append(txtNome.getText() + " diz -> \n" + txtMsg.getText() + "\tv\n");
 		}
 		bfw.flush();
 		txtMsg.setText("");
@@ -113,9 +117,9 @@ public class ClientExample extends JFrame implements ActionListener, KeyListener
 			{
 				msg = bfr.readLine();
 				if (msg.equals("Sair"))
-					texto.append("Servidor caiu! \r\n");
+					texto.append("Servidor caiu! \n");
 				else
-					texto.append(msg + "\r\n");
+					texto.append(msg + "\n");
 			}
 		}
 	}
@@ -143,9 +147,9 @@ public class ClientExample extends JFrame implements ActionListener, KeyListener
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-	                
 	    if(e.getKeyCode() == KeyEvent.VK_ENTER){
 	       try {
+	    	  if(!txtMsg.getText().equals(""))
 	          enviarMensagem(txtMsg.getText());
 	       } catch (IOException e1) {
 	           // TODO Auto-generated catch block

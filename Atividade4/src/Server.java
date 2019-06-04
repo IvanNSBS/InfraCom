@@ -69,8 +69,12 @@ public class Server extends Thread {
 		for (BufferedWriter bw : clientList) {
 			bwS = (BufferedWriter) bw;
 			if (!(bwSaida == bwS)) {
-				bw.write(nome + msg + "\r\n");
+				bw.write(nome + "\n" +msg + "\r\n");
 				bw.flush();
+			}
+			else {
+				bw.write(nome + "\n" +msg + "\tvv\r\n");
+				bw.flush();				
 			}
 		}
 	}
@@ -79,7 +83,7 @@ public class Server extends Thread {
 		try {
 			
 		    JLabel lblMessage = new JLabel("Porta do Servidor:");
-		    JTextField txtPorta = new JTextField("12345");
+		    JTextField txtPorta = new JTextField("3000");
 		    Object[] texts = {lblMessage, txtPorta };  
 		    JOptionPane.showMessageDialog(null, texts);
 		    server = new ServerSocket(Integer.parseInt(txtPorta.getText()));
