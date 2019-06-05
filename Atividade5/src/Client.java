@@ -105,7 +105,8 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		/////////
 		
 		ou =  new DataOutputStream(socket.getOutputStream());
-		out = null;
+		bos = new ByteArrayOutputStream();
+		out = new ObjectOutputStream(bos);   
 	}
 
 	public void enviarMensagem(String msg) throws IOException {
@@ -116,13 +117,14 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			String ms = txtNome.getText() + " diz -> \n" + msg + "\n";
 			ClientData cd = new ClientData(ms);
 			
-//			out = new ObjectOutputStream(bos);   
-//			out.writeObject(cd);
-//			out.flush();
-//			
-//			byte[] yourBytes = bos.toByteArray();
+		
+			out.writeObject(cd);
+			out.flush();
 			
-			msgToSend.writeBytes( ms );
+			byte[] yourBytes = bos.toByteArray();
+			bos.reset();
+			
+			msgToSend.write( yourBytes );
 			texto.append(ms);
 		}
 		msgToSend.flush();

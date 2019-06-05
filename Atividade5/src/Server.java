@@ -3,6 +3,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -28,7 +29,7 @@ public class Server extends Thread {
 	private Socket socket;
 	
 	private InputStream in;
-	private InputStreamReader inr;
+	private ObjectInputStream inr;
 	private BufferedReader bfr;
 
 	public Server(Socket sock) {
@@ -36,8 +37,10 @@ public class Server extends Thread {
 
 		try {
 			in = sock.getInputStream();
-			inr = new InputStreamReader(in);
-			bfr = new BufferedReader(inr);
+			inr = new ObjectInputStream(in);
+			
+			bfr = new BufferedReader(new InputStreamReader(in));
+			
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -48,19 +51,33 @@ public class Server extends Thread {
 		try {
 			String msg;
 			String line;
+			
 			OutputStream ou = this.socket.getOutputStream();
+			
 			Writer ouw = new OutputStreamWriter(ou);
 			BufferedWriter bfw = new BufferedWriter(ouw);
 			
 			clientList.add(bfw);
 			
-			msg = bfr.readLine();
-			System.out.println("Readed msg was: " + msg);
+//			msg = bfr.readLine();
+			ClientData cd = (ClientData) inr.readObject();
+			System.out.println("Readed msg was: " + cd.getMsg());
+			msg = cd.getMsg();
 			
+			//FIXME: (BROADCASTING) A new client seems to be receiving new data only if 
+			// it writes something first
+			//FIXME: Broadcasting seem to work only after all clients send some message.
+			// It'll accumulate messages in its buffer but'll only send to other clients
+			// after everyone sent some msg
+			//FIXME: The Client function disconnect causes errors if the client is the only
+			// one in the chat
+			//TODO: Add override to jframe onclose to avoid errors
 			while (!"Sair".equalsIgnoreCase(msg) && msg != null) {
 				sendToAll(bfw, msg);
-				msg = bfr.readLine();
-				System.out.println(msg);
+//				inr.reset();
+				cd = (ClientData)inr.readObject();
+				msg = cd.getMsg();
+				System.out.println("Readed msg was: " + cd.getMsg());
 			}
 		} 
 		catch (Exception e) {
@@ -74,7 +91,7 @@ public class Server extends Thread {
 		for (BufferedWriter bw : clientList) {
 			bwS = (BufferedWriter) bw;
 			if (!(bwSaida == bwS)) {
-				bw.write(msg + "\n");
+				bw.write(msg);
 				bw.flush();
 			}
 //			else {
