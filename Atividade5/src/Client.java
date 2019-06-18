@@ -23,7 +23,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	private Socket socket;
 	private DataOutputStream ou;
 	private Writer ouw;
-	private BufferedWriter bfw;
 	ByteArrayOutputStream bos;
 	ObjectOutput out;
 	
@@ -98,23 +97,32 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		
 		msgToSend = new DataOutputStream(socket.getOutputStream());
 		serverAnswer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		
-//		msgToSend.flush();
-		
-		
-		/////////
+
 		
 		ou =  new DataOutputStream(socket.getOutputStream());
 		bos = new ByteArrayOutputStream();
 		out = new ObjectOutputStream(bos);   
+		
+		String ms = txtNome.getText() + " conectou-se\n";
+		ClientData cd = new ClientData(ms);
+		
+	
+		out.writeObject(cd);
+		out.flush();
+		
+		byte[] yourBytes = bos.toByteArray();
+		bos.reset();
+		
+		msgToSend.write( yourBytes );
+		texto.append("Conectado\n");
+		
+		msgToSend.flush();
 	}
 
 	public void enviarMensagem(String msg) throws IOException {
+		
 		if (msg.equals("Sair")) {
-			msgToSend.writeBytes("Desconectado \n");
-			texto.append("Desconectado \n");
-		} else {
-			String ms = txtNome.getText() + " diz -> \n" + msg + "\n";
+			String ms = txtNome.getText() + " Desconectou-se\n";
 			ClientData cd = new ClientData(ms);
 			
 		
@@ -125,8 +133,24 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			bos.reset();
 			
 			msgToSend.write( yourBytes );
+			texto.append("Desconectado \n");
+		} 
+		
+		else 
+		{
+			String ms = txtNome.getText() + " diz -> \n" + msg + "\n";
+			ClientData cd = new ClientData(ms);
+			
+			out.writeObject(cd);
+			out.flush();
+			
+			byte[] yourBytes = bos.toByteArray();
+			bos.reset();
+			
+			msgToSend.write( yourBytes );
 			texto.append(ms);
 		}
+		
 		msgToSend.flush();
 		txtMsg.setText("");
 	}
@@ -137,7 +161,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		BufferedReader bfr = new BufferedReader(inr);
 		String msg = "";
 
-		while (!"Sair".equalsIgnoreCase(msg)) 
+		while (!"Sair13".equalsIgnoreCase(msg)) 
 		{
 			if (bfr.ready())
 			{
@@ -152,7 +176,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 
 	public void sair() throws IOException {
 		enviarMensagem("Sair");
-		bfw.close();
 		ouw.close();
 		ou.close();
 		socket.close();

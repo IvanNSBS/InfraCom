@@ -61,7 +61,7 @@ public class Server extends Thread {
 			
 //			msg = bfr.readLine();
 			ClientData cd = (ClientData) inr.readObject();
-			System.out.println("Readed msg was: " + cd.getMsg());
+			System.out.println(cd.getMsg());
 			msg = cd.getMsg();
 			
 			//FIXME: (BROADCASTING) A new client seems to be receiving new data only if 
@@ -77,7 +77,7 @@ public class Server extends Thread {
 //				inr.reset();
 				cd = (ClientData)inr.readObject();
 				msg = cd.getMsg();
-				System.out.println("Readed msg was: " + cd.getMsg());
+				System.out.print(cd.getMsg());
 			}
 		} 
 		catch (Exception e) {
@@ -114,7 +114,7 @@ public class Server extends Thread {
 			clientList = new ArrayList<BufferedWriter>();
 
 			while (true) {
-				System.out.println("Aguardando conexão...");
+//				System.out.println("Aguardando conexão...");
 				Socket con = server.accept();
 				Thread t = new Server(con);
 				t.start();
