@@ -133,7 +133,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			bos.reset();
 			
 			msgToSend.write( yourBytes );
-			texto.append("Desconectado \n");
+			texto.append("Desconectado\n");
 		} 
 		
 		else 

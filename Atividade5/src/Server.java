@@ -64,11 +64,6 @@ public class Server extends Thread {
 			System.out.println(cd.getMsg());
 			msg = cd.getMsg();
 			
-			//FIXME: (BROADCASTING) A new client seems to be receiving new data only if 
-			// it writes something first
-			//FIXME: Broadcasting seem to work only after all clients send some message.
-			// It'll accumulate messages in its buffer but'll only send to other clients
-			// after everyone sent some msg
 			//FIXME: The Client function disconnect causes errors if the client is the only
 			// one in the chat
 			//TODO: Add override to jframe onclose to avoid errors
