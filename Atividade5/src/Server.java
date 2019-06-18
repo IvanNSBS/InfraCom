@@ -56,27 +56,24 @@ public class Server extends Thread {
 			BufferedWriter bfw = new BufferedWriter(ouw);
 			
 			clientList.add(bfw);
-			
-			ClientData cd = (ClientData) inr.readObject();
-			System.out.print(cd.getMsg());
-			msg = cd.getMsg();
+		
 			
 			//FIXME: The Client function disconnect causes errors if the client is the only
 			// one in the chat
 			//TODO: Add override to jframe onclose to avoid errors
-			while ( msg != null ) {
-				sendToAll(bfw, msg);
-				
-				cd = (ClientData)inr.readObject();
+			do{
+				ClientData cd = (ClientData)inr.readObject();
 				msg = cd.getMsg();
 				System.out.print(cd.getMsg());
 				
+				sendToAll(bfw, msg);
+				
 				if(cd.disconnected) {
-					sendToAll(bfw, msg);
 					clientList.remove(bfw);
 					break;
 				}
-			}
+				
+			}while ( msg != null );
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
