@@ -50,8 +50,6 @@ public class Server extends Thread {
 	public void run() {
 		try {
 			String msg;
-			String line;
-			
 			OutputStream ou = this.socket.getOutputStream();
 			
 			Writer ouw = new OutputStreamWriter(ou);
@@ -59,20 +57,25 @@ public class Server extends Thread {
 			
 			clientList.add(bfw);
 			
-//			msg = bfr.readLine();
 			ClientData cd = (ClientData) inr.readObject();
-			System.out.println(cd.getMsg());
+			System.out.print(cd.getMsg());
 			msg = cd.getMsg();
 			
 			//FIXME: The Client function disconnect causes errors if the client is the only
 			// one in the chat
 			//TODO: Add override to jframe onclose to avoid errors
-			while (!"Sair".equalsIgnoreCase(msg) && msg != null) {
+			while ( msg != null ) {
 				sendToAll(bfw, msg);
-//				inr.reset();
+				
 				cd = (ClientData)inr.readObject();
 				msg = cd.getMsg();
 				System.out.print(cd.getMsg());
+				
+				if(cd.disconnected) {
+					sendToAll(bfw, msg);
+					clientList.remove(bfw);
+					break;
+				}
 			}
 		} 
 		catch (Exception e) {
@@ -109,7 +112,6 @@ public class Server extends Thread {
 			clientList = new ArrayList<BufferedWriter>();
 
 			while (true) {
-//				System.out.println("Aguardando conexão...");
 				Socket con = server.accept();
 				Thread t = new Server(con);
 				t.start();

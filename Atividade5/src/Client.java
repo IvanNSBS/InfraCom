@@ -123,7 +123,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		
 		if (msg.equals("Sair")) {
 			String ms = txtNome.getText() + " Desconectou-se\n";
-			ClientData cd = new ClientData(ms);
+			ClientData cd = new ClientData(ms, true);
 			
 		
 			out.writeObject(cd);
@@ -134,6 +134,8 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			
 			msgToSend.write( yourBytes );
 			texto.append("Desconectado\n");
+			
+			socket.close();
 		} 
 		
 		else 
@@ -176,8 +178,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 
 	public void sair() throws IOException {
 		enviarMensagem("Sair");
-		ouw.close();
-		ou.close();
+//		ou.close();
 		socket.close();
 	}
 
