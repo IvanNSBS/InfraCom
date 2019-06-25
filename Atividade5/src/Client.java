@@ -11,6 +11,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -140,7 +141,8 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		
 		else 
 		{
-			String ms = txtNome.getText() + " diz -> \n" + msg + "\n";
+			String ms = txtNome.getText() + ": \n" + msg + "\t\n";
+			String mymsg = txtNome.getText() + ": \n" + msg + "\tv\n";
 			ClientData cd = new ClientData(ms);
 			
 			out.writeObject(cd);
@@ -150,35 +152,40 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			bos.reset();
 			
 			msgToSend.write( yourBytes );
-			texto.append(ms);
+			texto.append( mymsg );
 		}
 		
 		msgToSend.flush();
 		txtMsg.setText("");
 	}
 
-	public void escutar() throws IOException {
-		InputStream in = socket.getInputStream();
-		InputStreamReader inr = new InputStreamReader(in);
-		BufferedReader bfr = new BufferedReader(inr);
+	public void escutar() throws IOException, ClassNotFoundException {
+		InputStream in = this.socket.getInputStream();
+		
+		ObjectInputStream inr = new ObjectInputStream(in);
+		
+		BufferedReader bfr = new BufferedReader(new InputStreamReader(in));
+		
 		String msg = "";
 
-		while (!"Sair13".equalsIgnoreCase(msg)) 
+		while (!"Sair".equalsIgnoreCase(msg)) 
 		{
-			if (bfr.ready())
-			{
-				msg = bfr.readLine();
+//			if (bfr.ready())
+//			{
+//				msg = bfr.readLine();
+				ClientData cd = (ClientData)inr.readObject();
+				msg = cd.getMsg();
+				
 				if (msg.equals("Sair"))
 					texto.append("Servidor caiu! \n");
 				else
-					texto.append(msg + "\n");
-			}
+					texto.append(msg);
+//			}
 		}
 	}
 
 	public void sair() throws IOException {
 		enviarMensagem("Sair");
-//		ou.close();
 		socket.close();
 	}
 
@@ -218,7 +225,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	  // TODO Auto-generated method stub               
 	}
 	
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, ClassNotFoundException {
 		Client app = new Client();
 		app.conectar();
 		app.escutar();

@@ -1,9 +1,11 @@
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -22,7 +24,7 @@ import javax.swing.JTextField;
 
 public class Server extends Thread {
 	
-	private static ArrayList<BufferedWriter> clientList;
+	private static ArrayList<DataOutputStream> clientList;
 	private static ServerSocket server;
 	
 	private String nome;
@@ -32,6 +34,9 @@ public class Server extends Thread {
 	private ObjectInputStream inr;
 	private BufferedReader bfr;
 
+	private ByteArrayOutputStream bos;
+	private ObjectOutputStream out;
+	
 	public Server(Socket sock) {
 		this.socket = sock;
 
@@ -41,6 +46,8 @@ public class Server extends Thread {
 			
 			bfr = new BufferedReader(new InputStreamReader(in));
 			
+			bos = new ByteArrayOutputStream();
+			out = new ObjectOutputStream(bos);
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -53,7 +60,7 @@ public class Server extends Thread {
 			OutputStream ou = this.socket.getOutputStream();
 			
 			Writer ouw = new OutputStreamWriter(ou);
-			BufferedWriter bfw = new BufferedWriter(ouw);
+			DataOutputStream bfw = new DataOutputStream(this.socket.getOutputStream());
 			
 			clientList.add(bfw);
 		
@@ -80,13 +87,21 @@ public class Server extends Thread {
 		}
 	}
 
-	public void sendToAll(BufferedWriter bwSaida, String msg) throws IOException {
-		BufferedWriter bwS;
+	public void sendToAll(DataOutputStream bwSaida, String msg) throws IOException {
+		DataOutputStream bwS;
 
-		for (BufferedWriter bw : clientList) {
-			bwS = (BufferedWriter) bw;
+		for (DataOutputStream bw : clientList) {
+			bwS = (DataOutputStream) bw;
 			if (!(bwSaida == bwS)) {
-				bw.write(msg);
+				ClientData answ = new ClientData(msg);
+				
+				out.writeObject(answ);
+				out.flush();
+				
+				byte[] yourBytes = bos.toByteArray();
+				bos.reset();
+				
+				bw.write( yourBytes );
 				bw.flush();
 			}
 //			else {
@@ -106,7 +121,7 @@ public class Server extends Thread {
 		    server = new ServerSocket(Integer.parseInt(txtPorta.getText()));
 		    JOptionPane.showMessageDialog(null,"Servidor ativo na porta: " + txtPorta.getText() + "e ip: " + server.getInetAddress());
 		    
-			clientList = new ArrayList<BufferedWriter>();
+			clientList = new ArrayList<DataOutputStream>();
 
 			while (true) {
 				Socket con = server.accept();
