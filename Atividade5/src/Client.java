@@ -153,7 +153,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 		else 
 		{
 			String ms = txtNome.getText() + ":\n" + msg + "\t\n";
-			String mymsg = txtNome.getText() + ":  (v)\n" + msg + "\t\n";
+			String mymsg = "Voce:  (v)\n" + msg + "\t\n";
 			
 			ClientData cd = new ClientData(ms, clientID);
 			
@@ -206,7 +206,10 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 				if( cd.ACKReceive && cd.clientID.equals(this.clientID) ) {
 					
 					String txtMsg = cd.getMsg().replaceFirst("\n", "  (v)\n");
+					txtMsg = txtMsg.replaceFirst( txtNome.getText(), "Voce");
+					
 					String newMsg = cd.getMsg().replaceFirst("\n" , "  (w)\n");
+					newMsg = newMsg.replaceFirst(txtNome.getText(), "Voce");
 					String allTxt = texto.getText();
 					
 					allTxt = allTxt.replace(txtMsg, newMsg);
@@ -214,7 +217,10 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 				}
 				else if( cd.ACKVis && cd.clientID.equals(this.clientID) ) {
 					String txtMsg = cd.getMsg().replaceFirst("\n", "  (w)\n");
+					txtMsg = txtMsg.replaceFirst( txtNome.getText(), "Voce");
+					
 					String newMsg = cd.getMsg().replaceFirst("\n", "  (V)\n");
+					newMsg = newMsg.replaceFirst(txtNome.getText(), "Voce");
 					String allTxt = texto.getText();
 					
 					allTxt = allTxt.replace(txtMsg, newMsg);
