@@ -26,6 +26,11 @@ public class ClientData implements java.io.Serializable {
 		disconnected = dc;
 	}
 	
+	ClientData(boolean deleteRequest, String msg ){
+		cur_message = msg;
+		this.deleteRequest = deleteRequest;
+	}
+	
 	ClientData(boolean ACKRcv, boolean ACKVis, String clientID, String msg){
 		this.ACKReceive = ACKRcv;
 		this.ACKVis = ACKVis;

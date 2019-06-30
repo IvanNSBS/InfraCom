@@ -15,6 +15,8 @@ import java.util.UUID;
 
 import javax.swing.*;
 
+//TODO: Fix !del command deleting all messages that are the same
+
 public class Client extends JFrame implements ActionListener, KeyListener, WindowListener {
 	private Socket socket;
 	
@@ -24,7 +26,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 	private String clientID = UUID.randomUUID().toString();
 
 	private Stack<ClientData> unreadMessages = new Stack<ClientData>();
-	
+	private Stack<String> sentMessages = new Stack<String>();
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -44,8 +46,6 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 	int port = 3000;
 
 	public Client() throws IOException {
-		
-//		addWindowListener( new WindowListener() );
 		
 		addWindowListener(this);
 		
@@ -118,19 +118,50 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 			msgToSend.reset();
 			texto.append("Desconectado\n");
 			
+			txtMsg.disable();
 			socket.close();
 		} 
 		
+		else if( msg.contains("!del ") ) {
+			int index = Integer.parseInt(msg.substring(5));
+			
+			if(index >= 0 && index < sentMessages.size()) {
+				String delMsg = sentMessages.elementAt(index);
+				
+				ClientData delReq = new ClientData( true, delMsg );
+				msgToSend.writeObject( delReq );
+				msgToSend.reset();
+				
+				
+				String name = delMsg.substring( delMsg.indexOf("\n") );
+				String newMsg = "\nEsta mensagem foi apagada\n";
+				
+				
+				System.out.println("name = " + name);
+				System.out.println("newMsg:\n" + newMsg);
+				String allTxt = texto.getText();
+				
+				System.out.println("AllTxt:\n" + allTxt);
+				
+				allTxt = allTxt.replace(name, newMsg);
+				texto.setText(allTxt);
+			}
+			else
+				System.out.println("Invalid msg index to remove");
+		}
+		
 		else 
 		{
-			String ms = txtNome.getText() + ": \n" + msg + "\t\n";
-			String mymsg = txtNome.getText() + ": \n" + msg + "\tv\n";
+			String ms = txtNome.getText() + ":\n" + msg + "\t\n";
+			String mymsg = txtNome.getText() + ":  (v)\n" + msg + "\t\n";
 			
 			ClientData cd = new ClientData(ms, clientID);
 			
 			msgToSend.writeObject( cd );
 			msgToSend.reset();
 			texto.append( mymsg );
+			
+			sentMessages.push( ms );
 		}
 		
 		msgToSend.flush();
@@ -143,7 +174,16 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 		{
 			ClientData cd = (ClientData)inr.readObject();
 			
-			if( !cd.ACKReceive && !cd.ACKVis ) {
+			if( cd.deleteRequest ) {
+				String name = cd.getMsg().substring(0, cd.getMsg().indexOf("\n"));
+				String newMsg = name + "\nEsta mensagem foi apagada\n";
+				String allTxt = texto.getText();
+				
+				allTxt = allTxt.replace(cd.getMsg(), newMsg);
+				texto.setText(allTxt);
+			}
+			
+			else if( !cd.ACKReceive && !cd.ACKVis ) {
 				texto.append( cd.getMsg() );
 				ClientData rcvAck = new ClientData(true, false, cd.clientID, cd.getMsg());
 				
@@ -165,16 +205,16 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 				//if target client == this client
 				if( cd.ACKReceive && cd.clientID.equals(this.clientID) ) {
 					
-					String txtMsg = cd.getMsg().replace("\t\n", "\tv\n");
-					String newMsg = cd.getMsg().replace("\t\n" , "\tw\n");
+					String txtMsg = cd.getMsg().replaceFirst("\n", "  (v)\n");
+					String newMsg = cd.getMsg().replaceFirst("\n" , "  (w)\n");
 					String allTxt = texto.getText();
 					
 					allTxt = allTxt.replace(txtMsg, newMsg);
 					texto.setText(allTxt);
 				}
 				else if( cd.ACKVis && cd.clientID.equals(this.clientID) ) {
-					String txtMsg = cd.getMsg().replace("\t\n", "\tw\n");
-					String newMsg = cd.getMsg().replace("\t\n" , "\tV\n");
+					String txtMsg = cd.getMsg().replaceFirst("\n", "  (w)\n");
+					String newMsg = cd.getMsg().replaceFirst("\n", "  (V)\n");
 					String allTxt = texto.getText();
 					
 					allTxt = allTxt.replace(txtMsg, newMsg);
