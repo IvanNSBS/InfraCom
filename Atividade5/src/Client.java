@@ -83,9 +83,9 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 		pnlContent.add(txtMsg);
 		pnlContent.add(btnSair);
 		pnlContent.add(btnSend);
-		pnlContent.setBackground(Color.DARK_GRAY);
-		texto.setBorder(BorderFactory.createEtchedBorder(Color.BLUE, Color.BLUE));
-		txtMsg.setBorder(BorderFactory.createEtchedBorder(Color.BLUE, Color.BLUE));
+		pnlContent.setBackground(Color.LIGHT_GRAY);
+		texto.setBorder(BorderFactory.createEtchedBorder(Color.DARK_GRAY, Color.DARK_GRAY));
+		txtMsg.setBorder(BorderFactory.createEtchedBorder(Color.DARK_GRAY, Color.DARK_GRAY));
 		setTitle(txtNome.getText());
 		setContentPane(pnlContent);
 		setLocationRelativeTo(null);
@@ -154,7 +154,9 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 				//disable text input so the user can no longer try to write anything
 				//update text background color for visual feedback that the user can 
 				//no longer write messages
-				texto.setBackground(Color.LIGHT_GRAY);
+				txtMsg.setBackground(new Color( Color.LIGHT_GRAY.getRed()-40, 
+												Color.LIGHT_GRAY.getGreen()-40, 
+												Color.LIGHT_GRAY.getBlue()-40));
 				txtMsg.disable();
 			} 
 			
