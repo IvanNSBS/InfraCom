@@ -53,7 +53,7 @@ public class Server extends Thread {
 			// one in the chat
 			//TODO: Add override to jframe onclose to avoid errors
 			do{
-				ClientData cd = (ClientData)inr.readObject();
+				Message cd = (Message)inr.readObject();
 				msg = cd.getMsg();
 				System.out.print(cd.getMsg());
 				
@@ -71,7 +71,7 @@ public class Server extends Thread {
 		}
 	}
 
-	public void sendToAll(ObjectOutputStream bwSaida, ClientData msg) throws IOException {
+	public void sendToAll(ObjectOutputStream bwSaida, Message msg) throws IOException {
 		ObjectOutputStream bwS;
 
 		for (ObjectOutputStream bw : clientList) {

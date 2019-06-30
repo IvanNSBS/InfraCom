@@ -26,7 +26,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 	
 	private String clientID = UUID.randomUUID().toString();
 
-	private Stack<ClientData> unreadMessages = new Stack<ClientData>();
+	private Stack<Message> unreadMessages = new Stack<Message>();
 	private ArrayList< String > sentMessages = new ArrayList<String>();
 	//Sent messages occurrence index. Used to not remove wrong messages
 	private ArrayList< Integer > sentMsgsIndex= new ArrayList<Integer>();
@@ -113,7 +113,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 		inr = new ObjectInputStream( this.socket.getInputStream() );
 		
 		String ms = txtNome.getText() + " conectou-se\n";
-		ClientData cd = new ClientData(ms, clientID);
+		Message cd = new Message(ms, clientID);
 
 		msgToSend.writeObject( cd );
 		texto.append("Conectado\n");
@@ -127,7 +127,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 		
 		if (msg.equals("Sair")) {
 			String ms = txtNome.getText() + " Desconectou-se\n";
-			ClientData cd = new ClientData(ms, true);
+			Message cd = new Message(ms, true);
 			
 			msgToSend.writeObject( cd );
 			msgToSend.reset();
@@ -144,7 +144,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 				String delMsg = sentMessages.get(index);
 				int ocrIndex = sentMsgsIndex.get(index);
 				
-				ClientData delReq = new ClientData( true, delMsg, ocrIndex );
+				Message delReq = new Message( true, delMsg, ocrIndex );
 				msgToSend.writeObject( delReq );
 				msgToSend.reset();
 				
@@ -181,7 +181,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 			String ms = txtNome.getText() + ":\n" + msg + "\t\n";
 			String mymsg = "Voce:  (v)\n" + msg + "\t\n";
 			
-			ClientData cd = new ClientData(ms, clientID);
+			Message cd = new Message(ms, clientID);
 			
 			msgToSend.writeObject( cd );
 			msgToSend.reset();
@@ -210,7 +210,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 		
 		while ( !socket.isClosed() )
 		{
-			ClientData cd = (ClientData)inr.readObject();
+			Message cd = (Message)inr.readObject();
 			
 			if( cd.deleteRequest ) {
 				String old = cd.getMsg().substring(cd.getMsg().indexOf("\n") );
@@ -238,13 +238,13 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 			
 			else if( !cd.ACKReceive && !cd.ACKVis ) {
 				texto.append( cd.getMsg() );
-				ClientData rcvAck = new ClientData(true, false, cd.clientID, cd.getMsg());
+				Message rcvAck = new Message(true, false, cd.clientID, cd.getMsg());
 				
 				msgToSend.writeObject( rcvAck );
 				msgToSend.reset();
 				msgToSend.flush();
 				
-				ClientData visAck = new ClientData(false, true, cd.clientID, cd.getMsg());
+				Message visAck = new Message(false, true, cd.clientID, cd.getMsg());
 				if( hasFocus ) {
 					
 					msgToSend.writeObject( visAck );
@@ -321,7 +321,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 		// TODO Auto-generated method stub
 		int size = unreadMessages.size();
 		for(int i = 0; i < size; i++) {
-			ClientData visAck = unreadMessages.pop();
+			Message visAck = unreadMessages.pop();
 			try {
 				msgToSend.writeObject( visAck );
 				msgToSend.reset();

@@ -1,4 +1,4 @@
-public class ClientData implements java.io.Serializable {
+public class Message implements java.io.Serializable {
 	private static final long serialVersionUID = 1L;
 	public String cur_message;
 	
@@ -11,27 +11,27 @@ public class ClientData implements java.io.Serializable {
 	
 	public int occurrence = -1;
 	
-	ClientData(String msg, String clientID) {
+	Message(String msg, String clientID) {
 		cur_message = msg;
 		this.clientID = clientID;
 	}
 	
-	ClientData(boolean dc) {
+	Message(boolean dc) {
 		disconnected = dc;
 	}
 	
-	ClientData(String msg, boolean dc) {
+	Message(String msg, boolean dc) {
 		cur_message = msg;
 		disconnected = dc;
 	}
 	
-	ClientData(boolean deleteRequest, String msg, int ocr ){
+	Message(boolean deleteRequest, String msg, int ocr ){
 		cur_message = msg;
 		this.deleteRequest = deleteRequest;
 		occurrence = ocr;
 	}
 	
-	ClientData(boolean ACKRcv, boolean ACKVis, String clientID, String msg){
+	Message(boolean ACKRcv, boolean ACKVis, String clientID, String msg){
 		this.ACKReceive = ACKRcv;
 		this.ACKVis = ACKVis;
 		this.clientID = clientID;
