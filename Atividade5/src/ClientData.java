@@ -1,17 +1,15 @@
-import java.util.UUID;
-
 public class ClientData implements java.io.Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	public String cur_message;
+	public boolean deleteRequest;
+	
 	public boolean disconnected;
 	
-	public boolean ACK;
-	String msgID = UUID.randomUUID().toString();
-	
-	String targetID;
+	public String clientID;
+	public boolean ACKReceive, ACKVis;
 	
 	ClientData(String msg) {
 		cur_message = msg;
@@ -26,9 +24,11 @@ public class ClientData implements java.io.Serializable {
 		disconnected = dc;
 	}
 	
-	ClientData(boolean ACK, String tgId){
-		this.ACK = ACK;
-		this.targetID = tgId;
+	ClientData(boolean ACKRcv, boolean ACKVis, String clientID, String msg){
+		this.ACKReceive = ACKRcv;
+		this.ACKVis = ACKVis;
+		this.clientID = clientID;
+		cur_message = msg;
 	}
 	
 	String getMsg() {

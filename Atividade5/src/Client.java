@@ -4,39 +4,30 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.Socket;
+import java.util.UUID;
+
 import javax.swing.*;
 
 public class Client extends JFrame implements ActionListener, KeyListener {
 	private Socket socket;
-	private DataOutputStream ou;
-	private Writer ouw;
-	ByteArrayOutputStream bos;
-	ObjectOutput out;
 	
-	DataOutputStream msgToSend;
-	BufferedReader serverAnswer;
+	ObjectOutputStream msgToSend;
+	ObjectInputStream inr;
 	
 	private String name = "User";
 	private String ip = "localhost";
+	
+	String clientID = UUID.randomUUID().toString();
 
 	public Runnable listener;
 	public Runnable writer;
 
 	private static final long serialVersionUID = 1L;
+	
 	private JTextArea texto;
 	private JTextField txtMsg;
 	private JButton btnSend;
@@ -96,26 +87,16 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	public void conectar() throws IOException {
 		socket = new Socket(txtIP.getText(), Integer.parseInt(txtPorta.getText()));
 		
-		msgToSend = new DataOutputStream(socket.getOutputStream());
-		serverAnswer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-		
-		ou =  new DataOutputStream(socket.getOutputStream());
-		bos = new ByteArrayOutputStream();
-		out = new ObjectOutputStream(bos);   
+		msgToSend = new ObjectOutputStream(socket.getOutputStream());  
+		inr = new ObjectInputStream( this.socket.getInputStream() );
 		
 		String ms = txtNome.getText() + " conectou-se\n";
 		ClientData cd = new ClientData(ms);
-		
-	
-		out.writeObject(cd);
-		out.flush();
-		
-		byte[] yourBytes = bos.toByteArray();
-		bos.reset();
-		
-		msgToSend.write( yourBytes );
+
+		msgToSend.writeObject( cd );
 		texto.append("Conectado\n");
+		
+		System.out.println(txtNome.getText() + " id is: " + clientID);
 		
 		msgToSend.flush();
 	}
@@ -126,14 +107,8 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			String ms = txtNome.getText() + " Desconectou-se\n";
 			ClientData cd = new ClientData(ms, true);
 			
-		
-			out.writeObject(cd);
-			out.flush();
-			
-			byte[] yourBytes = bos.toByteArray();
-			bos.reset();
-			
-			msgToSend.write( yourBytes );
+			msgToSend.writeObject( cd );
+			msgToSend.reset();
 			texto.append("Desconectado\n");
 			
 			socket.close();
@@ -145,13 +120,8 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			String mymsg = txtNome.getText() + ": \n" + msg + "\tv\n";
 			ClientData cd = new ClientData(ms);
 			
-			out.writeObject(cd);
-			out.flush();
-			
-			byte[] yourBytes = bos.toByteArray();
-			bos.reset();
-			
-			msgToSend.write( yourBytes );
+			msgToSend.writeObject( cd );
+			msgToSend.reset();
 			texto.append( mymsg );
 		}
 		
@@ -160,28 +130,13 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	}
 
 	public void escutar() throws IOException, ClassNotFoundException {
-		InputStream in = this.socket.getInputStream();
 		
-		ObjectInputStream inr = new ObjectInputStream(in);
-		
-		BufferedReader bfr = new BufferedReader(new InputStreamReader(in));
-		
-		String msg = "";
-
-		while (!"Sair".equalsIgnoreCase(msg)) 
+		while ( !socket.isClosed() )
 		{
-//			if (bfr.ready())
-//			{
-//				msg = bfr.readLine();
-				ClientData cd = (ClientData)inr.readObject();
-				msg = cd.getMsg();
-				
-				if (msg.equals("Sair"))
-					texto.append("Servidor caiu! \n");
-				else
-					texto.append(msg);
-//			}
+			ClientData cd = (ClientData)inr.readObject();
+			texto.append(cd.getMsg());
 		}
+		
 	}
 
 	public void sair() throws IOException {

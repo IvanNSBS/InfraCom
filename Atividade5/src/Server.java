@@ -1,30 +1,21 @@
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
+import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Scanner;
-import java.util.stream.Collectors;
 
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 public class Server extends Thread {
 	
-	private static ArrayList<DataOutputStream> clientList;
+	private static ArrayList<ObjectOutputStream> clientList;
 	private static ServerSocket server;
 	
 	private String nome;
@@ -32,10 +23,6 @@ public class Server extends Thread {
 	
 	private InputStream in;
 	private ObjectInputStream inr;
-	private BufferedReader bfr;
-
-	private ByteArrayOutputStream bos;
-	private ObjectOutputStream out;
 	
 	public Server(Socket sock) {
 		this.socket = sock;
@@ -44,10 +31,6 @@ public class Server extends Thread {
 			in = sock.getInputStream();
 			inr = new ObjectInputStream(in);
 			
-			bfr = new BufferedReader(new InputStreamReader(in));
-			
-			bos = new ByteArrayOutputStream();
-			out = new ObjectOutputStream(bos);
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -60,7 +43,7 @@ public class Server extends Thread {
 			OutputStream ou = this.socket.getOutputStream();
 			
 			Writer ouw = new OutputStreamWriter(ou);
-			DataOutputStream bfw = new DataOutputStream(this.socket.getOutputStream());
+			ObjectOutputStream bfw = new ObjectOutputStream(this.socket.getOutputStream());
 			
 			clientList.add(bfw);
 		
@@ -87,27 +70,17 @@ public class Server extends Thread {
 		}
 	}
 
-	public void sendToAll(DataOutputStream bwSaida, String msg) throws IOException {
-		DataOutputStream bwS;
+	public void sendToAll(ObjectOutputStream bwSaida, String msg) throws IOException {
+		ObjectOutputStream bwS;
 
-		for (DataOutputStream bw : clientList) {
-			bwS = (DataOutputStream) bw;
+		for (ObjectOutputStream bw : clientList) {
+			bwS = (ObjectOutputStream) bw;
 			if (!(bwSaida == bwS)) {
 				ClientData answ = new ClientData(msg);
 				
-				out.writeObject(answ);
-				out.flush();
-				
-				byte[] yourBytes = bos.toByteArray();
-				bos.reset();
-				
-				bw.write( yourBytes );
+				bw.writeObject( answ );
 				bw.flush();
 			}
-//			else {
-//				bw.write(msg + "\tvv\r\n");
-//				bw.flush();				
-//			}
 		}
 	}
 
@@ -121,7 +94,7 @@ public class Server extends Thread {
 		    server = new ServerSocket(Integer.parseInt(txtPorta.getText()));
 		    JOptionPane.showMessageDialog(null,"Servidor ativo na porta: " + txtPorta.getText() + "e ip: " + server.getInetAddress());
 		    
-			clientList = new ArrayList<DataOutputStream>();
+			clientList = new ArrayList<ObjectOutputStream>();
 
 			while (true) {
 				Socket con = server.accept();
