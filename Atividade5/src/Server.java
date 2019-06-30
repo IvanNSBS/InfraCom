@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -87,10 +88,15 @@ public class Server extends Thread {
 			
 		    JLabel lblMessage = new JLabel("Porta do Servidor:");
 		    JTextField txtPorta = new JTextField("3000");
-		    Object[] texts = {lblMessage, txtPorta };  
+		    JLabel lblIPMessage = new JLabel("IP do Servidor:");
+		    JTextField txtIP= new JTextField( InetAddress.getLocalHost().getHostAddress() );
+		    Object[] texts = {lblMessage, txtPorta, lblIPMessage, txtIP };  
 		    JOptionPane.showMessageDialog(null, texts);
-		    server = new ServerSocket(Integer.parseInt(txtPorta.getText()));
-		    JOptionPane.showMessageDialog(null,"Servidor ativo na porta: " + txtPorta.getText() + "e ip: " + server.getInetAddress());
+		    
+		    server = new ServerSocket(Integer.parseInt(txtPorta.getText()), 10, InetAddress.getByName(txtIP.getText()));
+		    JOptionPane.showMessageDialog(null,"Servidor ativo na porta: " + txtPorta.getText() + "\nIP: " + server.getInetAddress());
+		    
+		    System.out.println("Host IP: " + InetAddress.getByName(txtIP.getText()));
 		    
 			clientList = new ArrayList<ObjectOutputStream>();
 
