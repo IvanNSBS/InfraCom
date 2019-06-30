@@ -103,10 +103,10 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 			if( deletedMsg.equals( sentMessages.get(i) )  ) 
 				sentMsgsIndex.set(i, sentMsgsIndex.get(i) - 1);
 		
-		//If the index was valid, remove from the msg from the lists
+		//If the index was valid, remove the msg from the lists
 		if( msgIndex >= 0 && msgIndex < sentMessages.size() ) {
 			sentMsgsIndex.remove(msgIndex);
-			sentMessages.remove(msgIndex);
+			String msg = sentMessages.remove(msgIndex);
 		}
 	}
 	
@@ -209,11 +209,16 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 						curIndex += oldMsg.length();
 					}
 					
-					updateOccurrenceIndexes( delMsg, ocrIndex );
+					updateOccurrenceIndexes( delMsg, index );
 					texto.setText(allTxt);
 				}
-				else
-					System.out.println("Invalid msg index to remove");
+				else {
+					System.out.println("Invalid msg index to remove\nMessages.size = " + sentMessages.size());
+					System.out.println("sentMessages:");
+					for(int i = 0; i < sentMessages.size(); i++)
+						System.out.println( sentMessages.get(i) );
+					
+				}
 			}
 			
 			else 

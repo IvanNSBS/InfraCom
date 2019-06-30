@@ -50,7 +50,7 @@ public class Server extends Thread {
 				try {
 					//get received message
 					Message cd = (Message)inr.readObject();
-					System.out.print(cd.getMsg());
+//					System.out.print(cd.getMsg());
 					
 					//send received messages to all users
 					sendToAll(bfw, cd );
