@@ -4,28 +4,28 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Stack;
 import java.util.UUID;
 
 import javax.swing.*;
 
-public class Client extends JFrame implements ActionListener, KeyListener {
+public class Client extends JFrame implements ActionListener, KeyListener, WindowListener {
 	private Socket socket;
 	
-	ObjectOutputStream msgToSend;
-	ObjectInputStream inr;
+	private ObjectOutputStream msgToSend;
+	private ObjectInputStream inr;
 	
-	private String name = "User";
-	private String ip = "localhost";
+	private String clientID = UUID.randomUUID().toString();
+
+	private Stack<ClientData> unreadMessages = new Stack<ClientData>();
 	
-	String clientID = UUID.randomUUID().toString();
-
-	public Runnable listener;
-	public Runnable writer;
-
+	
 	private static final long serialVersionUID = 1L;
 	
 	private JTextArea texto;
@@ -39,9 +39,16 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	private JTextField txtPorta;
 	private JTextField txtNome;
 
+	boolean hasFocus = false;
+	
 	int port = 3000;
 
 	public Client() throws IOException {
+		
+//		addWindowListener( new WindowListener() );
+		
+		addWindowListener(this);
+		
 		JLabel lblMessage = new JLabel("Verificar!");
 		txtIP = new JTextField("localhost");
 		txtPorta = new JTextField("3000");
@@ -91,7 +98,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		inr = new ObjectInputStream( this.socket.getInputStream() );
 		
 		String ms = txtNome.getText() + " conectou-se\n";
-		ClientData cd = new ClientData(ms);
+		ClientData cd = new ClientData(ms, clientID);
 
 		msgToSend.writeObject( cd );
 		texto.append("Conectado\n");
@@ -118,7 +125,8 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		{
 			String ms = txtNome.getText() + ": \n" + msg + "\t\n";
 			String mymsg = txtNome.getText() + ": \n" + msg + "\tv\n";
-			ClientData cd = new ClientData(ms);
+			
+			ClientData cd = new ClientData(ms, clientID);
 			
 			msgToSend.writeObject( cd );
 			msgToSend.reset();
@@ -134,7 +142,45 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		while ( !socket.isClosed() )
 		{
 			ClientData cd = (ClientData)inr.readObject();
-			texto.append(cd.getMsg());
+			
+			if( !cd.ACKReceive && !cd.ACKVis ) {
+				texto.append( cd.getMsg() );
+				ClientData rcvAck = new ClientData(true, false, cd.clientID, cd.getMsg());
+				
+				msgToSend.writeObject( rcvAck );
+				msgToSend.reset();
+				msgToSend.flush();
+				
+				ClientData visAck = new ClientData(false, true, cd.clientID, cd.getMsg());
+				if( hasFocus ) {
+					
+					msgToSend.writeObject( visAck );
+					msgToSend.reset();
+					msgToSend.flush();
+				}
+				else 
+					unreadMessages.push(visAck);
+			}
+			else {
+				//if target client == this client
+				if( cd.ACKReceive && cd.clientID.equals(this.clientID) ) {
+					
+					String txtMsg = cd.getMsg().replace("\t\n", "\tv\n");
+					String newMsg = cd.getMsg().replace("\t\n" , "\tw\n");
+					String allTxt = texto.getText();
+					
+					allTxt = allTxt.replace(txtMsg, newMsg);
+					texto.setText(allTxt);
+				}
+				else if( cd.ACKVis && cd.clientID.equals(this.clientID) ) {
+					String txtMsg = cd.getMsg().replace("\t\n", "\tw\n");
+					String newMsg = cd.getMsg().replace("\t\n" , "\tV\n");
+					String allTxt = texto.getText();
+					
+					allTxt = allTxt.replace(txtMsg, newMsg);
+					texto.setText(allTxt);
+				}
+			}
 		}
 		
 	}
@@ -171,6 +217,31 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	}
 	    
 	@Override
+	public void windowActivated(WindowEvent e) {
+		hasFocus = true;
+		// TODO Auto-generated method stub
+		int size = unreadMessages.size();
+		for(int i = 0; i < size; i++) {
+			ClientData visAck = unreadMessages.pop();
+			try {
+				msgToSend.writeObject( visAck );
+				msgToSend.reset();
+				msgToSend.flush();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		hasFocus = false;
+	}
+
+	@Override
 	public void keyReleased(KeyEvent arg0) {
 	  // TODO Auto-generated method stub               
 	}
@@ -180,10 +251,40 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	  // TODO Auto-generated method stub               
 	}
 	
+	@Override
+	public void windowOpened(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	public static void main(String[] args) throws IOException, ClassNotFoundException {
 		Client app = new Client();
 		app.conectar();
 		app.escutar();
 	}
+
 
 }

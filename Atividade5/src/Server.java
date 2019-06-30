@@ -56,7 +56,7 @@ public class Server extends Thread {
 				msg = cd.getMsg();
 				System.out.print(cd.getMsg());
 				
-				sendToAll(bfw, msg);
+				sendToAll(bfw, cd );
 				
 				if(cd.disconnected) {
 					clientList.remove(bfw);
@@ -70,15 +70,13 @@ public class Server extends Thread {
 		}
 	}
 
-	public void sendToAll(ObjectOutputStream bwSaida, String msg) throws IOException {
+	public void sendToAll(ObjectOutputStream bwSaida, ClientData msg) throws IOException {
 		ObjectOutputStream bwS;
 
 		for (ObjectOutputStream bw : clientList) {
 			bwS = (ObjectOutputStream) bw;
 			if (!(bwSaida == bwS)) {
-				ClientData answ = new ClientData(msg);
-				
-				bw.writeObject( answ );
+				bw.writeObject( msg );
 				bw.flush();
 			}
 		}

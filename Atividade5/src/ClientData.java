@@ -4,15 +4,17 @@ public class ClientData implements java.io.Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	public String cur_message;
-	public boolean deleteRequest;
 	
-	public boolean disconnected;
+	public boolean deleteRequest = false;
+	
+	public boolean disconnected = false;
 	
 	public String clientID;
-	public boolean ACKReceive, ACKVis;
+	public boolean ACKReceive = false, ACKVis = false;
 	
-	ClientData(String msg) {
+	ClientData(String msg, String clientID) {
 		cur_message = msg;
+		this.clientID = clientID;
 	}
 	
 	ClientData(boolean dc) {
