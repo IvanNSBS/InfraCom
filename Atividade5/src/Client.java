@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Stack;
 import java.util.UUID;
 
@@ -26,7 +27,9 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 	private String clientID = UUID.randomUUID().toString();
 
 	private Stack<ClientData> unreadMessages = new Stack<ClientData>();
-	private Stack<String> sentMessages = new Stack<String>();
+	private ArrayList< String > sentMessages = new ArrayList<String>();
+	//Sent messages occurrence index. Used to not remove wrong messages
+	private ArrayList< Integer > sentMsgsIndex= new ArrayList<Integer>();
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -91,6 +94,18 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
 
+	public void updateOccurrenceIndexes(String deletedMsg, int msgIndex) {
+		
+		for(int i = msgIndex+1; i < sentMessages.size(); i++)
+			if( deletedMsg.equals( sentMessages.get(i) )  ) 
+				sentMsgsIndex.set(i, sentMsgsIndex.get(i) - 1);
+			
+		if( msgIndex >= 0 && msgIndex < sentMessages.size() ) {
+			sentMsgsIndex.remove(msgIndex);
+			sentMessages.remove(msgIndex);
+		}
+	}
+	
 	public void conectar() throws IOException {
 		socket = new Socket(txtIP.getText(), Integer.parseInt(txtPorta.getText()));
 		
@@ -126,9 +141,10 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 			int index = Integer.parseInt(msg.substring(5));
 			
 			if(index >= 0 && index < sentMessages.size()) {
-				String delMsg = sentMessages.elementAt(index);
+				String delMsg = sentMessages.get(index);
+				int ocrIndex = sentMsgsIndex.get(index);
 				
-				ClientData delReq = new ClientData( true, delMsg );
+				ClientData delReq = new ClientData( true, delMsg, ocrIndex );
 				msgToSend.writeObject( delReq );
 				msgToSend.reset();
 				
@@ -137,13 +153,23 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 				String newMsg = "\nEsta mensagem foi apagada\n";
 				
 				
-				System.out.println("name = " + name);
-				System.out.println("newMsg:\n" + newMsg);
 				String allTxt = texto.getText();
 				
-				System.out.println("AllTxt:\n" + allTxt);
+
+				String realMsg = name.substring( 1 );
+				int occurence = 0;
+				int curIndex = 0;
 				
-				allTxt = allTxt.replace(name, newMsg);
+				while ( (curIndex = allTxt.indexOf( realMsg, curIndex )) != -1 ) {
+					++occurence;
+					if(occurence == ocrIndex) {
+						allTxt = allTxt.substring(0, curIndex) + newMsg.substring(1) + allTxt.substring(curIndex + name.length() - 1);
+						break;
+					}
+					curIndex+= realMsg.length();
+				}
+				
+				updateOccurrenceIndexes( delMsg, ocrIndex);
 				texto.setText(allTxt);
 			}
 			else
@@ -161,7 +187,19 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 			msgToSend.reset();
 			texto.append( mymsg );
 			
-			sentMessages.push( ms );
+			sentMessages.add( ms );
+			
+			String realMsg = ms.substring( ms.indexOf("\n")+1 );
+			String allTxt = texto.getText();
+			int occurence = 0;
+			int curIndex = 0;
+			while ( (curIndex = allTxt.indexOf( realMsg, curIndex )) != -1 ) {
+				++occurence;
+				curIndex+= realMsg.length();
+			}
+			
+			sentMsgsIndex.add(occurence);
+			
 		}
 		
 		msgToSend.flush();
@@ -175,11 +213,26 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 			ClientData cd = (ClientData)inr.readObject();
 			
 			if( cd.deleteRequest ) {
-				String name = cd.getMsg().substring(0, cd.getMsg().indexOf("\n"));
-				String newMsg = name + "\nEsta mensagem foi apagada\n";
+				String old = cd.getMsg().substring(cd.getMsg().indexOf("\n") );
+				String newMsg = "Esta mensagem foi apagada\n";
 				String allTxt = texto.getText();
 				
-				allTxt = allTxt.replace(cd.getMsg(), newMsg);
+				int index = cd.occurrence;
+				
+				String realMsg = cd.getMsg().substring( cd.getMsg().indexOf("\n")+1 );
+				int occurence = 0;
+				int curIndex = 0;
+				
+				while ( (curIndex = allTxt.indexOf( realMsg, curIndex )) != -1 ) {
+					++occurence;
+					if(occurence == index) {
+						allTxt = allTxt.substring(0, curIndex) + newMsg + allTxt.substring(curIndex + old.length() - 1);
+						break;
+					}
+					curIndex+= realMsg.length();
+					updateOccurrenceIndexes( cd.getMsg(), index);
+				}
+				
 				texto.setText(allTxt);
 			}
 			
