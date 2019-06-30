@@ -7,9 +7,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class Server extends Thread {
 	
@@ -22,10 +22,16 @@ public class Server extends Thread {
 	private InputStream in;
 	private ObjectInputStream inr;
 	
+	private static JFrame frame;
+	private static JPanel panel;
+	private static JLabel labIP;
+	private static JLabel labPort;
+	private static JButton close;
+	
 	public Server(Socket sock) {
 		//set server socket
 		this.socket = sock;
-
+		
 		try {
 			//initialize input streams
 			in = sock.getInputStream();
@@ -50,7 +56,6 @@ public class Server extends Thread {
 				try {
 					//get received message
 					Message cd = (Message)inr.readObject();
-//					System.out.print(cd.getMsg());
 					
 					//send received messages to all users
 					sendToAll(bfw, cd );
@@ -110,7 +115,26 @@ public class Server extends Thread {
 		    
 		    //initialize clientList
 			clientList = new ArrayList<ObjectOutputStream>();
-
+			
+			frame = new JFrame("Servidor");
+			frame.setVisible(true);
+			frame.setSize(250, 100);
+			frame.setResizable(false);
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.setLocationRelativeTo(null);
+			
+			panel = new JPanel();
+			panel.setBackground(Color.LIGHT_GRAY);
+		
+			close = new JButton("Fechar Servidor");
+			labIP = new JLabel( "IP:" + txtIP.getText() + "\n" );
+			labPort = new JLabel( "Porta:" + txtPorta.getText() );
+			panel.add(labIP);
+			panel.add(labPort);
+			panel.add(close);
+			frame.add(panel);
+			
+			
 			//loop indefinitely to listen to connection request
 			while (true) {
 				Socket con = server.accept();

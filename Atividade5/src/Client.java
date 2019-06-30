@@ -53,11 +53,14 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 		
 		addWindowListener(this);
 		
-		JLabel lblMessage = new JLabel("Verificar!");
+		JLabel lblMessage = new JLabel("Informe seus Dados");
+		JLabel lblPorta = new JLabel("IP:");
+		JLabel lblIP = new JLabel("Porta:");
+		JLabel lblNome = new JLabel("Nome:");
 		txtIP = new JTextField("localhost");
 		txtPorta = new JTextField("3000");
 		txtNome = new JTextField("Cliente");
-		Object[] texts = { lblMessage, txtIP, txtPorta, txtNome };
+		Object[] texts = { lblMessage, lblIP, txtIP, lblPorta, txtPorta, lblNome, txtNome };
 		JOptionPane.showMessageDialog(null, texts);
 		pnlContent = new JPanel();
 		pnlContent.setPreferredSize(new Dimension(800,600));
