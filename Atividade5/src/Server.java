@@ -10,11 +10,14 @@ import java.util.ArrayList;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class Server extends Thread {
 	
 	//list of clients the server has to send data
 	private static ArrayList<ObjectOutputStream> clientList;
+	private static ArrayList<Thread> threads = new ArrayList<Thread>();
 	private static ServerSocket server;
 	
 	private Socket socket;
@@ -27,6 +30,8 @@ public class Server extends Thread {
 	private static JLabel labIP;
 	private static JLabel labPort;
 	private static JButton close;
+	
+	private static boolean closed = false;
 	
 	public Server(Socket sock) {
 		//set server socket
@@ -67,7 +72,7 @@ public class Server extends Thread {
 				}
 				catch(Exception e){ }
 				
-			}while ( clientList.size() > 0 );//loop while there's users
+			}while ( clientList.size() > 0 && !server.isClosed());//loop while there's users
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
@@ -76,8 +81,6 @@ public class Server extends Thread {
 
 	//broadcast function
 	public void sendToAll(ObjectOutputStream bwSaida, Message msg) throws IOException {
-
-		
 		for (ObjectOutputStream bw : clientList) {
 			//dont send message to the whoever sent the message
 			//unless it was a dc request.
@@ -85,8 +88,10 @@ public class Server extends Thread {
 			//disconnect from the server once he listens to the 
 			//delete request
 			if (!(bwSaida == bw) || msg.disconnected ) {
-				bw.writeObject( msg );
-				bw.flush();
+				if( !socket.isClosed() ) {
+					bw.writeObject( msg );
+					bw.flush();
+				}
 			}
 		}
 	}
@@ -127,6 +132,7 @@ public class Server extends Thread {
 			panel.setBackground(Color.LIGHT_GRAY);
 		
 			close = new JButton("Fechar Servidor");
+			
 			labIP = new JLabel( "IP:" + txtIP.getText() + "\n" );
 			labPort = new JLabel( "Porta:" + txtPorta.getText() );
 			panel.add(labIP);
@@ -134,12 +140,37 @@ public class Server extends Thread {
 			panel.add(close);
 			frame.add(panel);
 			
+			close.addActionListener( new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// TODO Auto-generated method stub
+					try {
+						//create socket so the server can properly close
+						closed = true;
+						Socket socket = new Socket(txtIP.getText(), Integer.parseInt(txtPorta.getText()));
+						
+						close.setEnabled(false);
+						close.setText("Servidor Fechado");
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			} );
 			
 			//loop indefinitely to listen to connection request
-			while (true) {
+			while ( !server.isClosed() ) {
 				Socket con = server.accept();
-				Thread t = new Server(con);
-				t.start();
+				if( closed == true ) {
+					server.close();
+					for(int i = 0; i < threads.size(); i++)
+						threads.get(i).stop();
+				}
+				else {
+					Thread t = new Server(con);
+					threads.add(t);
+					t.start();
+				}
 			}
 
 		} 

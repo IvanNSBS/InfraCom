@@ -40,15 +40,15 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 	private JButton btnSair; // same as above, but to close socket and exit server
 	private JLabel lblMsg;
 	private JPanel pnlContent;
-	private JTextField txtIP;
-	private JTextField txtPorta;
+	private static JTextField txtIP;
+	private static JTextField txtPorta;
 	private JTextField txtNome;
 
 	// if the owner is focusing the window. Used to know if msg was visualized.
 	boolean hasFocus = false; 
 	
 	int port = 3000;
-
+	
 	public Client() throws IOException {
 		
 		addWindowListener(this);
@@ -97,7 +97,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 		setVisible(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
-
+	
 	public void updateOccurrenceIndexes(String deletedMsg, int msgIndex) {
 		
 		//A message was deleted. Decrease occurrence index for equal
@@ -132,6 +132,7 @@ public class Client extends JFrame implements ActionListener, KeyListener, Windo
 		
 		//flush output stream
 		msgToSend.flush();
+		
 	}
 
 	@SuppressWarnings("deprecation")
