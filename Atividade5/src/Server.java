@@ -107,7 +107,7 @@ public class Server extends Thread {
 		    JTextField txtIP= new JTextField( InetAddress.getLocalHost().getHostAddress() );
 		    
 		    //temporary line to make debugging easier
-		    txtIP.setText("localhost");
+		    //txtIP.setText("localhost");
 		    
 		    Object[] texts = {lblMessage, txtPorta, lblIPMessage, txtIP };  
 		    JOptionPane.showMessageDialog(null, texts);
